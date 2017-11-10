@@ -1,0 +1,142 @@
+---
+title: "Hackathon - ML"
+author: Jothi Prakash Anandan
+date: "10 November 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Develop the classification models Decision Tree / kNN / Naïve Bayes
+1. Attached is a 'sample data' and below are the features       of the data. Review the sample data                          (Model_Data_sample.csv) and the description below. Build      an understanding of the data and plan your approach to       build a model
+
+
+2. Define your data exploration, imputation and visualization approach.?
+  Used to regular expression to remove dots(.) from the Compensation column. Imputation is not done. Used ggplot2 to visualize find relation between each feature using barplot and histogram and line plots.
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+library(tree)
+library(e1071)
+library(mice)
+
+setwd("D:/Machine Learning/Datasets/Hackathon - Assignment - 3/")
+getwd()
+
+model_data <- read.csv(file = "Model_Data.csv",
+                       header = F)
+names(model_data) <- c(
+  'Age',
+  'Workclass',
+  'Fnlwgt',
+  'Education',
+  'Education_num',
+  'Marital_status',
+  'Occupation',
+  'Relationship',
+  'Race',
+  'Sex',
+  'Capital_gain',
+  'Capital_loss',
+  'Hours_per_week',
+  'Native_country',
+  'Compensation'
+)
+```
+
+4. Set seed for sampling (your roll number) Eg. Set.seed(17125760345)
+
+```{r}
+set.seed(69)
+
+model_data$Compensation <- gsub("\\.", "", model_data$Compensation)
+model_data$Compensation <- as.factor(model_data$Compensation)
+```
+
+5. Split model data into train (80%) and test (20%)
+
+```{r}
+# Train and test dataset split
+train_sample_size <- floor(0.8 * nrow(model_data))
+train_data_index <- sample(seq_len(nrow(model_data)),
+                           size = train_sample_size)
+
+test_data <- model_data[-train_data_index, ]
+train_data <- model_data[train_data_index, ]
+
+test_data_result <- model_data$Compensation[-train_data_index]
+```
+
+6. Build 3 Models, each using one of different type of algorithm.
+
+**Decision Tree**
+
+```{r}
+tree.model = tree(Compensation ~ .,
+                  data = train_data[, -14])
+
+# plot(tree.model)
+# text(tree.model)
+model_prediction = predict(tree.model, test_data[, -14])
+
+maxidx = function(arr) {
+  return(which(arr == max(arr)))
+}
+idx = apply(model_prediction, c(1), maxidx)
+modelprediction = c('<=50K', '>50K')[idx]
+confmat = table(modelprediction, test_data$Compensation)
+# confmat
+
+accuracy <- sum(diag(confmat))/sum(confmat)
+accuracy
+```
+
+**Naive Bayes**
+
+```{r}
+# Naive bayes
+model <- naiveBayes(Compensation~., data = train_data[, -14])
+# model
+
+pred <- predict(model, test_data[, c(-14,-15)])
+# pred
+
+confmat <- table(pred, test_data$Compensation)
+# confmat
+
+accuracy <- sum(diag(confmat)) / sum(confmat)
+accuracy
+```
+
+
+**KNN**
+
+```{r}
+# KNN
+knn_train_data = model_data[train_data_index, c(1, 3, 5, 11, 13, 12)]
+knn_test_data = model_data[-train_data_index, c(1, 3, 5, 11, 13, 12)]
+knn_train_label = model_data[train_data_index, 14]
+knn_test_label = model_data[-train_data_index, 14]
+
+#install.packages("class")
+library(class)
+
+k = 5
+
+pc_pred_label = knn(train = knn_train_data,
+                    test = knn_test_data,
+                    cl = knn_train_label,
+                    k)
+
+confmat = table(knn_test_label, pc_pred_label)
+
+accuracy = sum(diag(confmat)) / sum(confmat)
+accuracy
+
+```
+
+## Generalization
+Naive bayes was giving 83% of prediction with all the columns included. Others algorithm's prediction was great too. But taking all the possible conditions to process data and giving "Good Fit" result are the criteria for selecting Naive bayes.
