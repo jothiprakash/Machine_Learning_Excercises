@@ -1,5 +1,5 @@
 ---
-title: "Hackathon - ML"
+title: "Hackathon - Machine Learning"
 author: Jothi Prakash Anandan
 date: "10 November 2017"
 output: html_document
@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-## Develop the classification models Decision Tree / kNN / Naïve Bayes
+## Develop the classification models Decision Tree / kNN / Na?ve Bayes
 1. Attached is a 'sample data' and below are the features       of the data. Review the sample data                          (Model_Data_sample.csv) and the description below. Build      an understanding of the data and plan your approach to       build a model
 
 
